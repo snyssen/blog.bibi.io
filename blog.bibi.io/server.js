@@ -8,6 +8,7 @@ var io = require('socket.io')(http);
 
 var users = []; // liste des users connectés
 var messages = []; // historique des messages
+var typingUsers = []; // liste des users en train d'écrire
 
 // On gère les requêtes HTTP des utilisateurs en leur renvoyant les
 // fichiers du dossier 'public'
@@ -86,6 +87,11 @@ io.on('connection', function (socket) {
 			}
 			// Emission d'un 'user-logout' contenant le user
 			io.emit('user-logout', loggedUser); 
+			// Retrait de l'user si il était en train d'écrire
+			var typingUserIndex = typingUsers.indexOf(loggedUser);
+			if (typingUserIndex !== -1) {
+				typingUsers.splice(typingUserIndex, 1);
+			} 
 		}
 	}); 
 
@@ -97,6 +103,24 @@ io.on('connection', function (socket) {
 		console.log(loggedUser.username + ' says ' + message.text);
 		AddMsgToHist(message);
 	});
+
+	// Utilisateur en train d'écrire
+	socket.on('start-typing', function () {
+		// Ajout du user à la liste des utilisateurs en cours de saisie
+		if (typingUsers.indexOf(loggedUser) === -1) {
+			typingUsers.push(loggedUser);
+		}
+		io.emit('update-typing', typingUsers);
+	});
+
+	// Utilisateur a arrêté d'écrire
+	socket.on('stop-typing', function () {
+		var typingUserIndex = typingUsers.indexOf(loggedUser);
+		if (typingUserIndex !== -1) {
+			typingUsers.splice(typingUserIndex, 1);
+		}
+		io.emit('update-typing', typingUsers);
+	}); 
 
 	// Ajout d'un message à l'historique des messages
 	function AddMsgToHist(message) {

@@ -41,7 +41,14 @@ section#chat {
 			border: 1px solid #e67e22;
 			color: black;
 			transition: all 0.5s;
-		} 
+		}
+
+			section#chat #users li span.typing {
+				float: right;
+				font-style: italic;
+				color: #eee;
+				display: none;
+			} 
 
 section#chat form {
 	background: #000;
