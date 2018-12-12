@@ -1,0 +1,13 @@
+{
+  "name": "blog.bibi.io",
+  "version": "0.0.0",
+  "description": "blog.bibi.io",
+  "main": "server.js",
+  "author": {
+    "name": ""
+  },
+  "dependencies": {
+    "express": "^4.16.4",
+    "socket.io": "^2.2.0"
+  }
+}
