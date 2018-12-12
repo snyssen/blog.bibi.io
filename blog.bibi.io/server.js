@@ -7,6 +7,7 @@ var http = require('http').Server(app);
 var io = require('socket.io')(http);
 
 var users = []; // liste des users connectés
+var messages = []; // historique des messages
 
 // On gère les requêtes HTTP des utilisateurs en leur renvoyant les
 // fichiers du dossier 'public'
@@ -23,6 +24,14 @@ io.on('connection', function (socket) {
 	// Envoi de la liste des users connectés à l'utilisateur en connexion
 	for (i = 0; i < users.length; i++) {
 		socket.emit('user-login', users[i]);
+	} 
+	// Envoi de l'historique de msgs à l'utilisateur en connexion
+	for (i = 0; i < messages.length; i++) {
+		if (messages[i].username !== undefined) {
+			socket.emit('chat-message', messages[i]); 
+		} else {
+			socket.emit('service-message', messages[i]);
+		}
 	} 
 
 	// Connexion user
@@ -50,6 +59,7 @@ io.on('connection', function (socket) {
 			socket.emit('service-message', userServiceMessage);
 			socket.broadcast.emit('service-message',
 				broadcastedServiceMessage);
+			AddMsgToHist(broadcastedServiceMessage);
 			// Emission de 'user-login' et appel du callback
 			io.emit('user-login', loggedUser);
 			callback(true);
@@ -68,6 +78,7 @@ io.on('connection', function (socket) {
 				type: 'logout'
 			};
 			socket.broadcast.emit('service-message', serviceMessage);
+			AddMsgToHist(serviceMessage);
 			// Suppression de la liste des connectés
 			var userIndex = users.indexOf(loggedUser);
 			if (userIndex !== -1) {
@@ -84,5 +95,15 @@ io.on('connection', function (socket) {
 		//d'utilisateur au message
 		io.emit('chat-message', message);
 		console.log(loggedUser.username + ' says ' + message.text);
+		AddMsgToHist(message);
 	});
+
+	// Ajout d'un message à l'historique des messages
+	function AddMsgToHist(message) {
+		messages.push(message);
+		// On supprime le message le plus ancien si la taille de l'historique dépasse 150
+		if (messages.length > 150) {
+			messages.splice(0, 1);
+		}
+	}
 }); 

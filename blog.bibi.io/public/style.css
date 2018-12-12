@@ -133,7 +133,7 @@ section#login {
 	opacity: 0;
 	top: 45%;
 	text-align: center;
-	position: absolute;
+	position: fixed;
 	width: 100%
 }
 
